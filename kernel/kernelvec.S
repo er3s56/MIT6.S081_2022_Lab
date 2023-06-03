@@ -109,6 +109,10 @@ timervec:
         add a3, a3, a2
         sd a3, 0(a1)
 
+        ld a1, 40(a0)
+        addi a1, a1, 1
+        sd a1, 40(a0)
+
         # raise a supervisor software interrupt.
 	li a1, 2
         csrw sip, a1
