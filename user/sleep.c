@@ -25,5 +25,6 @@ main(int argc, char *argv[])
   //printf("start sleep\n");
   sleep(sleep_t);
   //printf("end sleep\n");
+  exit(0);
   return 0;
 }
