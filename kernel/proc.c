@@ -141,6 +141,9 @@ found:
   p->context.ra = (uint64)forkret;
   p->context.sp = p->kstack + PGSIZE;
 
+  p->trace_mask =0;
+
+
   return p;
 }
 
@@ -281,6 +284,8 @@ fork(void)
     return -1;
   }
 
+  np->trace_mask = p->trace_mask;
+  
   // Copy user memory from parent to child.
   if(uvmcopy(p->pagetable, np->pagetable, p->sz) < 0){
     freeproc(np);
@@ -343,6 +348,8 @@ exit(int status)
 
   if(p == initproc)
     panic("init exiting");
+
+  p->trace_mask = 0;
 
   // Close all open files.
   for(int fd = 0; fd < NOFILE; fd++){
