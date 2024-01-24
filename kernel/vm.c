@@ -273,6 +273,11 @@ freewalk(pagetable_t pagetable)
   // there are 2^9 = 512 PTEs in a page table.
   for(int i = 0; i < 512; i++){
     pte_t pte = pagetable[i];
+    /*
+    Don't worry about infinite recursion, cause level 3 and 2 pagetable don't set
+    PTE_R PTE_W PTE_X.
+    Level 1 pagetable must at least set one of those bits.
+    */
     if((pte & PTE_V) && (pte & (PTE_R|PTE_W|PTE_X)) == 0){
       // this PTE points to a lower-level page table.
       uint64 child = PTE2PA(pte);
@@ -435,4 +440,42 @@ copyinstr(pagetable_t pagetable, char *dst, uint64 srcva, uint64 max)
   } else {
     return -1;
   }
+}
+
+void walkprint(pagetable_t pagetable, char *str)
+{
+  char new_str[20];
+  memmove(new_str, str, strlen(str));
+  int l = strlen(new_str);
+  new_str[l] = ' ';
+  new_str[l + 1] = '.';
+  new_str[l + 2] = '.';
+  new_str[l + 3] = 0;
+  // there are 2^9 = 512 PTEs in a page table.
+  for(int i = 0; i < 512; i++){
+    pte_t pte = pagetable[i];
+    
+    /*
+    Don't worry about infinite recursion, cause level 3 and 2 pagetable don't set
+    PTE_R PTE_W PTE_X.
+    Level 1 pagetable must at least set one of those bits.
+    */
+    if((pte & PTE_V) && (pte & (PTE_R|PTE_W|PTE_X)) == 0){
+      printf("%s%d: pte %p pa %p\n", str, i, pte, PTE2PA(pte));
+      
+      // this PTE points to a lower-level page table.
+      uint64 child = PTE2PA(pte);
+      walkprint((pagetable_t)child, new_str);
+    } else if(pte & PTE_V){
+      printf("%s%d: pte %p pa %p\n", str, i, pte, PTE2PA(pte));
+    }
+  }
+  
+  return;
+}
+
+void vmprint(pagetable_t pagetable)
+{
+  walkprint(pagetable, " ..");
+  return;
 }
