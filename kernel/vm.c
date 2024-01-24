@@ -10,7 +10,7 @@
  * the kernel's page table.
  */
 pagetable_t kernel_pagetable;
-
+struct usyscall *usyscall_p;
 extern char etext[];  // kernel.ld sets this to end of kernel code.
 
 extern char trampoline[]; // trampoline.S
@@ -22,6 +22,8 @@ kvmmake(void)
   pagetable_t kpgtbl;
 
   kpgtbl = (pagetable_t) kalloc();
+  usyscall_p = kalloc();
+
   memset(kpgtbl, 0, PGSIZE);
 
   // uart registers
@@ -42,6 +44,8 @@ kvmmake(void)
   // map the trampoline for trap entry/exit to
   // the highest virtual address in the kernel.
   kvmmap(kpgtbl, TRAMPOLINE, (uint64)trampoline, PGSIZE, PTE_R | PTE_X);
+
+  kvmmap(kpgtbl, USYSCALL, (uint64)usyscall_p, PGSIZE, PTE_R | PTE_W);
 
   // map kernel stacks
   proc_mapstacks(kpgtbl);
