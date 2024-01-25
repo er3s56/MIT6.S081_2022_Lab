@@ -1,0 +1,3 @@
+Speed up system calls
+Which other xv6 system call(s) could be made faster using this shared page? Explain how.
+Q: If a system call transport data between user space and kernel space, then it use shared page to speed up.
