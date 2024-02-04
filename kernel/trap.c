@@ -125,6 +125,25 @@ usertrapret(void)
   // switches to the user page table, restores user registers,
   // and switches to user mode with sret.
   uint64 fn = TRAMPOLINE + (userret - trampoline);
+
+  if (p->sigret_flag == 1 && p->alarm_interval != 0)
+  {
+    p->sigret_flag = 0;
+    p->siglock = 0;
+    memmove(p->trapframe, &p->sig_trapframe, sizeof(struct trapframe));
+    w_sepc(p->trapframe->epc);
+  }
+  else if (p->alarm_cnt == p->alarm_interval
+  && p->alarm_interval != 0
+  && p->siglock == 0)
+  {
+    p->siglock = 1;
+    memmove(&p->sig_trapframe, p->trapframe, sizeof(struct trapframe));
+    
+    p->alarm_cnt = 0;
+    w_sepc(p->alarm_handler);
+  }
+
   ((void (*)(uint64,uint64))fn)(TRAPFRAME, satp);
 }
 
@@ -206,6 +225,18 @@ devintr()
 
     if(cpuid() == 0){
       clockintr();
+
+      for (struct proc *tmp_p = &proc[0]; tmp_p < &proc[NPROC]; tmp_p++) 
+      {
+        acquire(&tmp_p->lock);
+        if (tmp_p->alarm_cnt < tmp_p->alarm_interval)
+        {
+          tmp_p->alarm_cnt++;
+        }
+        else
+          tmp_p->alarm_cnt = 0;
+        release(&tmp_p->lock);
+      }
     }
     
     // acknowledge the software interrupt by clearing

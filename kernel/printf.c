@@ -137,7 +137,6 @@ printfinit(void)
 void
 backtrace(void)
 {
-  extern struct proc proc[NPROC];
   struct proc *p = myproc();
   uint64 lower = KSTACK((int) (p - proc));
   uint64 fp = r_fp();

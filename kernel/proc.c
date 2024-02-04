@@ -358,6 +358,13 @@ exit(int status)
   end_op();
   p->cwd = 0;
 
+  memset(&p->sig_trapframe, 0, sizeof(struct trapframe));
+  p->alarm_cnt = 0;
+  p->alarm_handler = 0;
+  p->alarm_interval = 0;
+  p->siglock = 0;
+  p->sigret_flag = 0;
+  
   acquire(&wait_lock);
 
   // Give any children to init.
