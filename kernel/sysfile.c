@@ -437,6 +437,8 @@ sys_exec(void)
     argv[i] = kalloc();
     if(argv[i] == 0)
       goto bad;
+
+    page_ref(argv[i]);
     if(fetchstr(uarg, argv[i], PGSIZE) < 0)
       goto bad;
   }
@@ -444,13 +446,20 @@ sys_exec(void)
   int ret = exec(path, argv);
 
   for(i = 0; i < NELEM(argv) && argv[i] != 0; i++)
+  {
+    page_deref(argv[i]);
     kfree(argv[i]);
+  }
+    
 
   return ret;
 
  bad:
   for(i = 0; i < NELEM(argv) && argv[i] != 0; i++)
+  {
+    page_deref(argv[i]);
     kfree(argv[i]);
+  }
   return -1;
 }
 
