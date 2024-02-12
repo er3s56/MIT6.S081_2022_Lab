@@ -37,8 +37,6 @@ proc_mapstacks(pagetable_t kpgtbl) {
     char *pa = kalloc();
     if(pa == 0)
       panic("kalloc");
-    
-    page_ref(pa);
     uint64 va = KSTACK((int) (p - proc));
     kvmmap(kpgtbl, va, (uint64)pa, PGSIZE, PTE_R | PTE_W);
   }
@@ -129,8 +127,6 @@ found:
     return 0;
   }
 
-  page_ref(p->trapframe);
-
   // An empty user page table.
   p->pagetable = proc_pagetable(p);
   if(p->pagetable == 0){
@@ -155,11 +151,7 @@ static void
 freeproc(struct proc *p)
 {
   if(p->trapframe)
-  {
-    page_deref((void*)p->trapframe);
     kfree((void*)p->trapframe);
-  }
-    
   p->trapframe = 0;
   if(p->pagetable)
     proc_freepagetable(p->pagetable, p->sz);

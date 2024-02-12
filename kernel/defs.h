@@ -9,6 +9,8 @@ struct sleeplock;
 struct stat;
 struct superblock;
 
+#define REF_SIZE 33000 // (PHYSTOP - PGROUNDUP((uint64)end)) / PGSIZE + 1
+
 // bio.c
 void            binit(void);
 struct buf*     bread(uint, uint);
