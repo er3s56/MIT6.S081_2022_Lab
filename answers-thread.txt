@@ -1,0 +1,3 @@
+Using threads:
+1.Why are there missing keys with 2 threads, but not with 1 thread? Identify a sequence of events with 2 threads that can lead to a key being missing. Submit your sequence with a short explanation in answers-thread.txt.
+A: If we have thread A and thread B, when they insert the element after the same node at the same time, there will be only one new node.
